@@ -13,7 +13,10 @@ export class HydrogenSession {
   constructor(
     private sessionStorage: SessionStorage,
     private session: Session,
-  ) {}
+  ) {
+    this.session = session;
+    this.sessionStorage = sessionStorage;
+  }
 
   static async init(request: Request, secrets: string[]) {
     const storage = createCookieSessionStorage({
@@ -29,6 +32,10 @@ export class HydrogenSession {
     const session = await storage.getSession(request.headers.get('Cookie'));
 
     return new this(storage, session);
+  }
+
+  has(key: string) {
+    return this.session.has(key);
   }
 
   get(key: string) {

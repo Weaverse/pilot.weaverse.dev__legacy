@@ -1,33 +1,33 @@
 import {
-  defer,
-  type LinksFunction,
-  type LoaderArgs,
-  type AppLoadContext,
-} from '@shopify/remix-oxygen';
-import {
-  isRouteErrorResponse,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  isRouteErrorResponse,
   useLoaderData,
   useMatches,
   useRouteError,
 } from '@remix-run/react';
-import {ShopifySalesChannel, Seo} from '@shopify/hydrogen';
+import {Seo, ShopifySalesChannel} from '@shopify/hydrogen';
+import {
+  defer,
+  type AppLoadContext,
+  type LinksFunction,
+  type LoaderArgs,
+} from '@shopify/remix-oxygen';
 import invariant from 'tiny-invariant';
 
-import {seoPayload} from '~/lib/seo.server';
 import {Layout} from '~/components';
+import {seoPayload} from '~/lib/seo.server';
 
 import favicon from '../public/favicon.svg';
 
 import {GenericError} from './components/GenericError';
 import {NotFound} from './components/NotFound';
-import styles from './styles/app.css';
-import {DEFAULT_LOCALE, parseMenu, getCartId} from './lib/utils';
 import {useAnalytics} from './hooks/useAnalytics';
+import {DEFAULT_LOCALE, parseMenu} from './lib/utils';
+import styles from './styles/app.css';
 
 export const links: LinksFunction = () => {
   return [
@@ -45,9 +45,9 @@ export const links: LinksFunction = () => {
 };
 
 export async function loader({request, context}: LoaderArgs) {
-  const cartId = getCartId(request);
+  const {session, storefront, cart} = context;
   const [customerAccessToken, layout] = await Promise.all([
-    context.session.get('customerAccessToken'),
+    session.get('customerAccessToken'),
     getLayoutData(context),
   ]);
 
@@ -56,8 +56,8 @@ export async function loader({request, context}: LoaderArgs) {
   return defer({
     isLoggedIn: Boolean(customerAccessToken),
     layout,
-    selectedLocale: context.storefront.i18n,
-    cart: cartId ? getCart(context, cartId) : undefined,
+    selectedLocale: storefront.i18n,
+    cart: cart.get(),
     analytics: {
       shopifySalesChannel: ShopifySalesChannel.hydrogen,
       shopId: layout.shop.id,
@@ -71,7 +71,7 @@ export default function App() {
   const locale = data.selectedLocale ?? DEFAULT_LOCALE;
   const hasUserConsent = true;
 
-  useAnalytics(hasUserConsent, locale);
+  useAnalytics(hasUserConsent);
 
   return (
     <html lang={locale.language}>
@@ -82,7 +82,10 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body
+        style={{opacity: 0, transition: 'opacity 0.15s ease-in-out'}}
+        className="!opacity-100"
+      >
         <Layout
           key={`${locale.language}-${locale.country}`}
           layout={data.layout}
@@ -200,7 +203,7 @@ const LAYOUT_QUERY = `#graphql
   }
 ` as const;
 
-async function getLayoutData({storefront}: AppLoadContext) {
+async function getLayoutData({storefront, env}: AppLoadContext) {
   const data = await storefront.query(LAYOUT_QUERY, {
     variables: {
       headerMenuHandle: 'main-menu',
@@ -222,140 +225,22 @@ async function getLayoutData({storefront}: AppLoadContext) {
   const customPrefixes = {BLOG: '', CATALOG: 'products'};
 
   const headerMenu = data?.headerMenu
-    ? parseMenu(data.headerMenu, customPrefixes)
+    ? parseMenu(
+        data.headerMenu,
+        data.shop.primaryDomain.url,
+        env,
+        customPrefixes,
+      )
     : undefined;
 
   const footerMenu = data?.footerMenu
-    ? parseMenu(data.footerMenu, customPrefixes)
+    ? parseMenu(
+        data.footerMenu,
+        data.shop.primaryDomain.url,
+        env,
+        customPrefixes,
+      )
     : undefined;
 
   return {shop: data.shop, headerMenu, footerMenu};
-}
-
-const CART_QUERY = `#graphql
-  query cartQuery($cartId: ID!, $country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    cart(id: $cartId) {
-      ...CartFragment
-    }
-  }
-  fragment CartFragment on Cart {
-    id
-    checkoutUrl
-    totalQuantity
-    buyerIdentity {
-      countryCode
-      customer {
-        id
-        email
-        firstName
-        lastName
-        displayName
-      }
-      email
-      phone
-    }
-    lines(first: 100) {
-      edges {
-        node {
-          id
-          quantity
-          attributes {
-            key
-            value
-          }
-          cost {
-            totalAmount {
-              amount
-              currencyCode
-            }
-            amountPerQuantity {
-              amount
-              currencyCode
-            }
-            compareAtAmountPerQuantity {
-              amount
-              currencyCode
-            }
-          }
-          merchandise {
-            ... on ProductVariant {
-              id
-              availableForSale
-              compareAtPrice {
-                ...MoneyFragment
-              }
-              price {
-                ...MoneyFragment
-              }
-              requiresShipping
-              title
-              image {
-                ...ImageFragment
-              }
-              product {
-                handle
-                title
-                id
-              }
-              selectedOptions {
-                name
-                value
-              }
-            }
-          }
-        }
-      }
-    }
-    cost {
-      subtotalAmount {
-        ...MoneyFragment
-      }
-      totalAmount {
-        ...MoneyFragment
-      }
-      totalDutyAmount {
-        ...MoneyFragment
-      }
-      totalTaxAmount {
-        ...MoneyFragment
-      }
-    }
-    note
-    attributes {
-      key
-      value
-    }
-    discountCodes {
-      code
-    }
-  }
-
-  fragment MoneyFragment on MoneyV2 {
-    currencyCode
-    amount
-  }
-
-  fragment ImageFragment on Image {
-    id
-    url
-    altText
-    width
-    height
-  }
-` as const;
-
-export async function getCart({storefront}: AppLoadContext, cartId: string) {
-  invariant(storefront, 'missing storefront client in cart query');
-
-  const {cart} = await storefront.query(CART_QUERY, {
-    variables: {
-      cartId,
-      country: storefront.i18n.country,
-      language: storefront.i18n.language,
-    },
-    cache: storefront.CacheNone(),
-  });
-
-  return cart;
 }
