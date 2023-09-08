@@ -1,73 +1,78 @@
 import {
+  defer,
+  type LinksFunction,
+  type LoaderArgs,
+  type AppLoadContext,
+} from '@shopify/remix-oxygen';
+import {
   isRouteErrorResponse,
   Links,
-  LiveReload,
   Meta,
   Outlet,
   Scripts,
+  LiveReload,
   ScrollRestoration,
-  type ShouldRevalidateFunction,
   useLoaderData,
   useMatches,
-  useRouteError
-} from "@remix-run/react"
-import { Seo, ShopifySalesChannel } from "@shopify/hydrogen"
-import { type AppLoadContext, defer, type LinksFunction, type LoaderArgs } from "@shopify/remix-oxygen"
-import invariant from "tiny-invariant"
+  useRouteError,
+  type ShouldRevalidateFunction,
+} from '@remix-run/react';
+import {ShopifySalesChannel, Seo, useNonce} from '@shopify/hydrogen';
+import invariant from 'tiny-invariant';
 
-import { Layout } from "~/components"
-import { seoPayload } from "~/lib/seo.server"
+import {Layout} from '~/components';
+import {seoPayload} from '~/lib/seo.server';
 
-import favicon from "../public/favicon.svg"
+import favicon from '../public/favicon.svg';
 
-import { GenericError } from "./components/GenericError"
-import { NotFound } from "./components/NotFound"
-import { useAnalytics } from "./hooks/useAnalytics"
-import { DEFAULT_LOCALE, parseMenu } from "./lib/utils"
-import styles from "./styles/app.css"
+import {GenericError} from './components/GenericError';
+import {NotFound} from './components/NotFound';
+import styles from './styles/app.css';
+import {DEFAULT_LOCALE, parseMenu} from './lib/utils';
+import {useAnalytics} from './hooks/useAnalytics';
 
 // This is important to avoid re-fetching root queries on sub-navigations
 export const shouldRevalidate: ShouldRevalidateFunction = ({
-                                                             formMethod,
-                                                             currentUrl,
-                                                             nextUrl
-                                                           }) => {
+  formMethod,
+  currentUrl,
+  nextUrl,
+}) => {
   // revalidate when a mutation is performed e.g add to cart, login...
-  if (formMethod && formMethod !== "GET") {
-    return true
+  if (formMethod && formMethod !== 'GET') {
+    return true;
   }
 
   // revalidate when manually revalidating via useRevalidator
   if (currentUrl.toString() === nextUrl.toString()) {
-    return true
+    return true;
   }
 
-  return false
-}
+  return false;
+};
 
 export const links: LinksFunction = () => {
   return [
-    { rel: "stylesheet", href: styles },
+    {rel: 'stylesheet', href: styles},
     {
-      rel: "preconnect",
-      href: "https://cdn.shopify.com"
+      rel: 'preconnect',
+      href: 'https://cdn.shopify.com',
     },
     {
-      rel: "preconnect",
-      href: "https://shop.app"
+      rel: 'preconnect',
+      href: 'https://shop.app',
     },
-    { rel: "icon", type: "image/svg+xml", href: favicon }
-  ]
-}
+    {rel: 'icon', type: 'image/svg+xml', href: favicon},
+  ];
+};
 
-export async function loader({ request, context }: LoaderArgs) {
-  const { session, storefront, cart } = context
+export async function loader({request, context}: LoaderArgs) {
+  const {session, storefront, cart} = context;
   const [customerAccessToken, layout] = await Promise.all([
-    session.get("customerAccessToken"),
-    getLayoutData(context)
-  ])
+    session.get('customerAccessToken'),
+    getLayoutData(context),
+  ]);
 
-  const seo = seoPayload.root({ shop: layout.shop, url: request.url })
+  const seo = seoPayload.root({shop: layout.shop, url: request.url});
 
   return defer({
     isLoggedIn: Boolean(customerAccessToken),
@@ -76,93 +81,93 @@ export async function loader({ request, context }: LoaderArgs) {
     cart: cart.get(),
     analytics: {
       shopifySalesChannel: ShopifySalesChannel.hydrogen,
-      shopId: layout.shop.id
+      shopId: layout.shop.id,
     },
-    seo
-  })
+    seo,
+  });
 }
 
 export default function App() {
-  const data = useLoaderData<typeof loader>()
-  const locale = data.selectedLocale ?? DEFAULT_LOCALE
-  const hasUserConsent = true
+  const nonce = useNonce();
+  const data = useLoaderData<typeof loader>();
+  const locale = data.selectedLocale ?? DEFAULT_LOCALE;
+  const hasUserConsent = true;
 
-  useAnalytics(hasUserConsent)
+  useAnalytics(hasUserConsent);
 
   return (
     <html lang={locale.language}>
-    <head>
-      <meta charSet="utf-8" />
-      <meta name="viewport" content="width=device-width,initial-scale=1" />
-      <Seo />
-      <Meta />
-      <Links />
-    </head>
-    <body
-      style={{ opacity: 0, transition: "opacity 0.15s ease-in-out" }}
-      className="!opacity-100"
-    >
-    <Layout
-      key={`${locale.language}-${locale.country}`}
-      layout={data.layout}
-    >
-      <Outlet />
-    </Layout>
-    <ScrollRestoration />
-    <Scripts />
-    <LiveReload />
-    </body>
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <Seo />
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <Layout
+          key={`${locale.language}-${locale.country}`}
+          layout={data.layout}
+        >
+          <Outlet />
+        </Layout>
+        <ScrollRestoration nonce={nonce} />
+        <Scripts nonce={nonce} />
+        <LiveReload nonce={nonce} />
+      </body>
     </html>
-  )
+  );
 }
 
-export function ErrorBoundary({ error }: { error: Error }) {
-  const [root] = useMatches()
-  const locale = root?.data?.selectedLocale ?? DEFAULT_LOCALE
-  const routeError = useRouteError()
-  const isRouteError = isRouteErrorResponse(routeError)
+export function ErrorBoundary({error}: {error: Error}) {
+  const nonce = useNonce();
+  const [root] = useMatches();
+  const locale = root?.data?.selectedLocale ?? DEFAULT_LOCALE;
+  const routeError = useRouteError();
+  const isRouteError = isRouteErrorResponse(routeError);
 
-  let title = "Error"
-  let pageType = "page"
+  let title = 'Error';
+  let pageType = 'page';
 
   if (isRouteError) {
-    title = "Not found"
-    if (routeError.status === 404) pageType = routeError.data || pageType
+    title = 'Not found';
+    if (routeError.status === 404) pageType = routeError.data || pageType;
   }
 
   return (
     <html lang={locale.language}>
-    <head>
-      <meta charSet="utf-8" />
-      <meta name="viewport" content="width=device-width,initial-scale=1" />
-      <title>{title}</title>
-      <Meta />
-      <Links />
-    </head>
-    <body>
-    <Layout
-      layout={root?.data?.layout}
-      key={`${locale.language}-${locale.country}`}
-    >
-      {isRouteError ? (
-        <>
-          {routeError.status === 404 ? (
-            <NotFound type={pageType} />
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>{title}</title>
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <Layout
+          layout={root?.data?.layout}
+          key={`${locale.language}-${locale.country}`}
+        >
+          {isRouteError ? (
+            <>
+              {routeError.status === 404 ? (
+                <NotFound type={pageType} />
+              ) : (
+                <GenericError
+                  error={{message: `${routeError.status} ${routeError.data}`}}
+                />
+              )}
+            </>
           ) : (
-            <GenericError
-              error={{ message: `${routeError.status} ${routeError.data}` }}
-            />
+            <GenericError error={error instanceof Error ? error : undefined} />
           )}
-        </>
-      ) : (
-        <GenericError error={error instanceof Error ? error : undefined} />
-      )}
-    </Layout>
-    <Scripts />
-    <LiveReload />
-    </body>
+        </Layout>
+        <ScrollRestoration nonce={nonce} />
+        <Scripts nonce={nonce} />
+        <LiveReload nonce={nonce} />
+      </body>
     </html>
-  )
+  );
 }
 
 const LAYOUT_QUERY = `#graphql
@@ -219,18 +224,18 @@ const LAYOUT_QUERY = `#graphql
       ...ParentMenuItem
     }
   }
-` as const
+` as const;
 
-async function getLayoutData({ storefront, env }: AppLoadContext) {
+async function getLayoutData({storefront, env}: AppLoadContext) {
   const data = await storefront.query(LAYOUT_QUERY, {
     variables: {
-      headerMenuHandle: "main-menu",
-      footerMenuHandle: "footer",
-      language: storefront.i18n.language
-    }
-  })
+      headerMenuHandle: 'main-menu',
+      footerMenuHandle: 'footer',
+      language: storefront.i18n.language,
+    },
+  });
 
-  invariant(data, "No data returned from Shopify API")
+  invariant(data, 'No data returned from Shopify API');
 
   /*
     Modify specific links/routes (optional)
@@ -240,25 +245,25 @@ async function getLayoutData({ storefront, env }: AppLoadContext) {
       - /blog/news/blog-post -> /news/blog-post
       - /collections/all -> /products
   */
-  const customPrefixes = { BLOG: "", CATALOG: "products" }
+  const customPrefixes = {BLOG: '', CATALOG: 'products'};
 
   const headerMenu = data?.headerMenu
     ? parseMenu(
-      data.headerMenu,
-      data.shop.primaryDomain.url,
-      env,
-      customPrefixes
-    )
-    : undefined
+        data.headerMenu,
+        data.shop.primaryDomain.url,
+        env,
+        customPrefixes,
+      )
+    : undefined;
 
   const footerMenu = data?.footerMenu
     ? parseMenu(
-      data.footerMenu,
-      data.shop.primaryDomain.url,
-      env,
-      customPrefixes
-    )
-    : undefined
+        data.footerMenu,
+        data.shop.primaryDomain.url,
+        env,
+        customPrefixes,
+      )
+    : undefined;
 
-  return { shop: data.shop, headerMenu, footerMenu }
+  return {shop: data.shop, headerMenu, footerMenu};
 }
