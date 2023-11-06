@@ -19,7 +19,7 @@ jobs:
       - name: Setup node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
           check-latest: true
 
       - name: Get yarn cache directory
@@ -53,4 +53,3 @@ jobs:
           environment: 'preview'
           preview_url: ${{ steps.deploy.outputs.url }}
           description: ${{ github.event.head_commit.message }}
-        
