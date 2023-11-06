@@ -2,7 +2,13 @@
 module.exports = {
   appDirectory: 'app',
   ignoredRouteFiles: ['**/.*'],
-  watchPaths: ['./public', './.env'],
+  watchPaths: [
+    './public',
+    './.env',
+    '../../packages/core/dist/index.mjs',
+    '../../packages/react/dist/index.mjs',
+    '../../packages/hydrogen/dist/index.mjs',
+  ],
   server: './server.ts',
   /**
    * The following settings are required to deploy Hydrogen apps to Oxygen:
@@ -18,12 +24,4 @@ module.exports = {
   serverMinify: process.env.NODE_ENV === 'production',
   postcss: true,
   tailwind: true,
-  future: {
-    v2_dev: true,
-    v2_meta: true,
-    v2_headers: true,
-    v2_errorBoundary: true,
-    v2_routeConvention: true,
-    v2_normalizeFormMethod: true,
-  },
 };
