@@ -27,7 +27,7 @@ export default DescriptionTextItem;
 
 export let schema: HydrogenComponentSchema = {
   type: 'description-text--item',
-  title: 'Description text item',
+  title: 'Descripttion text item',
   inspector: [
     {
       group: 'Description text',
