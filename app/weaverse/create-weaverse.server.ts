@@ -36,7 +36,6 @@ export function getWeaverseCsp(request: Request) {
       'https://cdn.shopify.com',
       'https://shopify.com',
       'https://*.youtube.com',
-      'https://fonts.gstatic.com',
       'https://*.google.com',
       ...weaverseHosts,
     ],
@@ -49,6 +48,7 @@ export function getWeaverseCsp(request: Request) {
     styleSrc: [
       "'self'",
       "'unsafe-inline'",
+      'https://fonts.gstatic.com',
       'https://cdn.shopify.com',
       ...weaverseHosts,
     ],
