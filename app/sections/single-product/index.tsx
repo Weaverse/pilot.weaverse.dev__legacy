@@ -1,12 +1,12 @@
 import {Image, Money, ShopPayButton} from '@shopify/hydrogen';
-import {
+import type {
   ComponentLoaderArgs,
   HydrogenComponentProps,
   HydrogenComponentSchema,
   WeaverseProduct,
 } from '@weaverse/hydrogen';
 import {forwardRef, useEffect, useState} from 'react';
-import {ProductQuery} from 'storefrontapi.generated';
+import type {ProductQuery} from 'storefrontapi.generated';
 import {AddToCartButton} from '~/components';
 import {PRODUCT_QUERY, VARIANTS_QUERY} from '~/data/queries';
 import {Quantity} from './quantity';
@@ -32,9 +32,10 @@ let SingleProduct = forwardRef<HTMLElement, SingleProductProps>(
     useEffect(() => {
       setSelectedVariant(variants?.nodes?.[0]);
       setQuantity(1);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [product]);
 
-    if (!product) {
+    if (!product || !selectedVariant) {
       // TODO: should render placeholder instead of this message
       return (
         <section ref={ref} {...rest} className="h-20 bg-gray-200 p-6">
