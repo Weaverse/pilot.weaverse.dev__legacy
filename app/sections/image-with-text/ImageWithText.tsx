@@ -29,7 +29,7 @@ let ImageWithText = forwardRef<HTMLElement, ImageWithTextProps>((props, ref) => 
       <div className='h-full px-10 sm-max:px-6 sm-max:w-full'>
         <div className='flex justify-center items-center gap-5 h-full w-full sm-max:flex-col'>
           <div className='w-1/2 flex flex-1 items-center justify-center sm-max:order-first sm-max:w-full sm-max:py-10 sm-max:pb-0 sm-max:justify-center'>
-            {image ? <Image data={image} loading={loading} className='!w-1/2 !aspect-square sm-max:!w-full' /> :
+            {image ? <Image data={image} loading={loading} sizes="auto" className='!w-1/2 !aspect-square sm-max:!w-full' /> :
               <div className='flex justify-center items-center bg-gray-200 w-1/2 aspect-square'>
                 <IconImageBlank className='h-32 w-32 opacity-80' viewBox='0 0 100 100' />
               </div>
