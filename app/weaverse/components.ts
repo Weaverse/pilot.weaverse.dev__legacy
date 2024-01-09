@@ -12,7 +12,6 @@ import * as CountdownActions from '~/sections/countdown/actions';
 import * as CountDownTimer from '~/sections/countdown/timer';
 import * as FeaturedCollections from '~/sections/featured-collections';
 import * as FeaturedProducts from '~/sections/featured-products';
-import * as Hero from '~/sections/hero';
 import * as ImageBanner from '~/sections/image-banner';
 import * as ImageGallery from '~/sections/image-gallery';
 import * as ImageGalleryItem from '~/sections/image-gallery/image';
@@ -37,14 +36,13 @@ import * as TestimonialItems from '~/sections/testimonials/items';
 import * as VideoBanner from '~/sections/video-banner';
 import * as VideoEmbed from '~/sections/video-embed';
 import * as VideoEmbedItem from '~/sections/video-embed/video';
-
+import * as MetaDemo from '~/sections/meta-demo';
 export let components: HydrogenComponent[] = [
   ...commonComponents,
   AllProducts,
   BlogPost,
   Blogs,
   CollectionBanner,
-  Hero,
   Page,
   VideoEmbed,
   VideoEmbedItem,
@@ -77,4 +75,5 @@ export let components: HydrogenComponent[] = [
   CollectionList,
   SingleProduct,
   Judgeme,
+  MetaDemo
 ];
