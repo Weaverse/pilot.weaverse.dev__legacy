@@ -64,8 +64,8 @@ let ProductInformation = forwardRef<HTMLDivElement, ProductInformationProps>(
                     gallerySize === 'small'
                       ? 'large'
                       : gallerySize === 'large'
-                      ? 'small'
-                      : 'medium'
+                        ? 'small'
+                        : 'medium'
                   ],
                 )}
               >

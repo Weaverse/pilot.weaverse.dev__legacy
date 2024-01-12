@@ -38,9 +38,21 @@ export function Link(props: LinkProps) {
 
   if (typeof className === 'function') {
     return (
-      <RemixNavLink to={toWithLocale} className={className} {...resOfProps} />
+      <RemixNavLink
+        unstable_viewTransition
+        to={toWithLocale}
+        className={className}
+        {...resOfProps}
+      />
     );
   }
 
-  return <RemixLink to={toWithLocale} className={className} {...resOfProps} />;
+  return (
+    <RemixLink
+      unstable_viewTransition
+      to={toWithLocale}
+      className={className}
+      {...resOfProps}
+    />
+  );
 }

@@ -38,9 +38,9 @@ export async function loader({params, request, context}: RouteLoaderArgs) {
     throw new Response('product', {status: 404});
   }
 
-  if (!product.selectedVariant) {
-    throw redirectToFirstVariant({product, request});
-  }
+  // if (!product.selectedVariant) {
+  //   throw redirectToFirstVariant({product, request});
+  // }
 
   // In order to show which variants are available in the UI, we need to query
   // all of them. But there might be a *lot*, so instead separate the variants

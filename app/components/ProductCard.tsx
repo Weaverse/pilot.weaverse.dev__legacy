@@ -56,9 +56,12 @@ export function ProductCard({
   return (
     <div className="flex flex-col gap-2">
       <Link
-        onClick={onClick}
+        // onClick={onClick}
         to={`/products/${product.handle}`}
         prefetch="intent"
+        className={({isTransitioning}) => {
+          return isTransitioning ? 'vt-product-image' : '';
+        }}
       >
         <div className={clsx('grid gap-4', className)}>
           <div className="card-image aspect-[4/5] bg-primary/5">
