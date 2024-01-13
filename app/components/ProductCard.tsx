@@ -56,7 +56,7 @@ export function ProductCard({
   return (
     <div className="flex flex-col gap-2">
       <Link
-        // onClick={onClick}
+        onClick={onClick}
         to={`/products/${product.handle}`}
         prefetch="intent"
         className={({isTransitioning}) => {
