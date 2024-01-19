@@ -36,7 +36,7 @@ jobs:
             ${{ runner.os }}-
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build and Publish to Oxygen
         id: deploy
