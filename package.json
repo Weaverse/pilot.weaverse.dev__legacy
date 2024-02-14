@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "@remix-run/dev": "2.4.1",
+    "@shopify/cli-kit": "3.53.0",
     "@remix-run/eslint-config": "2.4.1",
     "@shopify/eslint-plugin": "44.0.0",
     "@shopify/oxygen-workers-types": "^4.0.0",
@@ -68,9 +69,6 @@
   },
   "optionalDependencies": {
     "@esbuild/linux-x64": "^0"
-  },
-  "overrides": {
-    "@shopify/cli-kit": "3.53.0"
   },
   "engines": {
     "node": ">=18.0.0"
