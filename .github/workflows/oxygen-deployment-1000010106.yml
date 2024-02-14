@@ -40,7 +40,7 @@ jobs:
 
       - name: Build and Publish to Oxygen
         id: deploy
-        uses: shopify/oxygenctl-action@v4
+        uses: shopify/oxygenctl-action@v4.10.0
         with:
           oxygen_deployment_token: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000010106 }}
           build_command: "npm run build"
