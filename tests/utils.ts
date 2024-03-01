@@ -31,3 +31,5 @@ export function normalizePrice(price: string | null) {
       .replace('-', '.'),
   );
 }
+
+
