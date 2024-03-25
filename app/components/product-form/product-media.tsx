@@ -39,12 +39,12 @@ export function ProductMedia(props: ProductMediaProps) {
     },
   };
 
-  let [activeInd, setActiveInd] = useState(0);
-  let [sliderRef, instanceRef] = useKeenSlider({
+  let [activeInd, setAcitveInd] = useState(0);
+  const [sliderRef, instanceRef] = useKeenSlider({
     ...slideOptions,
-    slideChanged: (slider) => {
+    slideChanged(slider) {
       let pos = slider.track.details.rel;
-      setActiveInd(pos);
+      setAcitveInd(pos);
       let maxThumbnailIndex =
         thumbnailInstance.current?.track.details.maxIdx || 0;
       let thumbnailNext = Math.min(
@@ -54,18 +54,19 @@ export function ProductMedia(props: ProductMediaProps) {
       thumbnailInstance.current?.moveToIdx(thumbnailNext);
     },
   });
-
-  function moveToIdx(idx: number) {
-    setActiveInd(idx);
-    if (instanceRef.current) {
-      instanceRef.current.moveToIdx(idx);
-    }
-  }
-
-  let [thumbnailRef, thumbnailInstance] = useKeenSlider(thumbnailOptions);
-  function handleClickThumbnail(idx: number) {
+  let moveToIdx = useCallback(
+    (idx: number) => {
+      setAcitveInd(idx);
+      if (instanceRef.current) {
+        instanceRef.current.moveToIdx(idx);
+      }
+    },
+    [instanceRef],
+  );
+  const [thumbnailRef, thumbnailInstance] = useKeenSlider(thumbnailOptions);
+  let handleClickThumbnail = (idx: number) => {
     moveToIdx(idx);
-  }
+  };
 
   useEffect(() => {
     // instanceRef.current?.update(slideOptions);
@@ -76,12 +77,13 @@ export function ProductMedia(props: ProductMediaProps) {
     });
     moveToIdx(selectedInd);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedVariant?.id]);
-
+  }, [selectedVariant?.id, moveToIdx]);
   return (
     <div
       className="grid vt-product-image"
-      style={{ gap: spacing, }}
+      style={{
+        gap: spacing,
+      }}
     >
       <div ref={sliderRef} className="keen-slider">
         {media.map((med, i) => {
