@@ -346,7 +346,7 @@ export default function SortMenu() {
         className="absolute right-0 flex flex-col p-4 text-right rounded-sm bg-contrast"
       >
         {items.map((item) => (
-          <Menu.Item key={item.label}>
+          <Menu.Item key={item.key}>
             {() => (
               <Link
                 className={`block text-sm pb-2 px-3 ${
