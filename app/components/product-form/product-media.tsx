@@ -1,7 +1,7 @@
 import {Image} from '@shopify/hydrogen';
 import clsx from 'clsx';
 import {useKeenSlider} from 'keen-slider/react';
-import {useCallback, useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import type {MediaFragment} from 'storefrontapi.generated';
 
 interface ProductMediaProps {
@@ -39,12 +39,12 @@ export function ProductMedia(props: ProductMediaProps) {
     },
   };
 
-  let [activeInd, setAcitveInd] = useState(0);
-  const [sliderRef, instanceRef] = useKeenSlider({
+  let [activeInd, setActiveInd] = useState(0);
+  let [sliderRef, instanceRef] = useKeenSlider({
     ...slideOptions,
-    slideChanged(slider) {
+    slideChanged: (slider) => {
       let pos = slider.track.details.rel;
-      setAcitveInd(pos);
+      setActiveInd(pos);
       let maxThumbnailIndex =
         thumbnailInstance.current?.track.details.maxIdx || 0;
       let thumbnailNext = Math.min(
@@ -54,19 +54,18 @@ export function ProductMedia(props: ProductMediaProps) {
       thumbnailInstance.current?.moveToIdx(thumbnailNext);
     },
   });
-  let moveToIdx = useCallback(
-    (idx: number) => {
-      setAcitveInd(idx);
-      if (instanceRef.current) {
-        instanceRef.current.moveToIdx(idx);
-      }
-    },
-    [instanceRef],
-  );
-  const [thumbnailRef, thumbnailInstance] = useKeenSlider(thumbnailOptions);
-  let handleClickThumbnail = (idx: number) => {
+
+  function moveToIdx(idx: number) {
+    setActiveInd(idx);
+    if (instanceRef.current) {
+      instanceRef.current.moveToIdx(idx);
+    }
+  }
+
+  let [thumbnailRef, thumbnailInstance] = useKeenSlider(thumbnailOptions);
+  function handleClickThumbnail(idx: number) {
     moveToIdx(idx);
-  };
+  }
 
   useEffect(() => {
     // instanceRef.current?.update(slideOptions);
@@ -77,14 +76,10 @@ export function ProductMedia(props: ProductMediaProps) {
     });
     moveToIdx(selectedInd);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedVariant?.id, moveToIdx]);
+  }, [selectedVariant?.id]);
+
   return (
-    <div
-      className="grid vt-product-image"
-      style={{
-        gap: spacing,
-      }}
-    >
+    <div className="grid vt-product-image" style={{gap: spacing}}>
       <div ref={sliderRef} className="keen-slider">
         {media.map((med, i) => {
           let image =
